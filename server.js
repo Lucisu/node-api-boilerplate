@@ -3,16 +3,27 @@ const app = express();
 const bodyParser = require('body-parser');
 const v1    = require('./routes/v1');
 var cors = require('cors');
+
+const helmet = require('helmet')
+
+Date.prototype.toJSON = function(){ return this.toLocaleString(); }
+app.use(helmet());
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(require("./routes/v1/limiter").api);
+
+
 const expressValidator = require('express-validator');
 const db = require('./config/db.config.js');
+
 // force: true will drop the table if it already exists
 db.sequelize.sync({force: true}).then(() => {
   console.log('Drop and Resync with { force: true }');
 });
 
-//app.use(cors());
+app.use(cors());
 //app.use(express.static('public'));
 
 app.use(function(req, res, next) {
@@ -49,17 +60,20 @@ app.use('/v1', v1);
 app.use('/v1/uploads',express.static('uploads'))
 
 app.use(cors());
-app.use(expressValidator())
+app.use(expressValidator());
 
 app.use(function (error, req, res, next) {
   if (error instanceof SyntaxError) {
-    return res.status(400).json({error: "Invalid body"});
+    return res.status(400).json({status: "error", message: "Invalid body"});
   } else {
-    next();
+    return res.status(500).json({status: "error", message: "Server error"});
+
   }
 });
 
-
+app.use(function(req, res, next){
+  res.sendJson("Not Found: ["+req.method+"] " + req.originalUrl, 404);
+})
 // Create a Server
 const server = app.listen(process.env.PORT || 5000, function () {
 

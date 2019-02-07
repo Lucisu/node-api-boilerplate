@@ -10,7 +10,7 @@ const uploadMiddleware = require('../../../middlewares/upload');
 router.use(require("./meta.js"));
 
 
-router.get('/user/test', users.test);
+router.get('/user/test', authMiddleware, users.test);
 
 router.post('/user',limiter.account, users.validate("create"), users.create);
 router.put('/user',limiter.api,authMiddleware, users.update);

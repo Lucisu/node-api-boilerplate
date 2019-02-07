@@ -48,6 +48,7 @@ module.exports = (sequelize, Sequelize) => {
 		  type: Sequelize.STRING,
 			allowNull: false,
 	  },
+
 		last_access: {
 			type: Sequelize.DATE,
 			allowNull: false,

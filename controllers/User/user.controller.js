@@ -3,7 +3,7 @@ const User = db.users;
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const validation = require('./validation.js');
+const validation = require('./user.validation.js');
 const config = require("../../config/config.json");
 
 const multer  = require('multer');
@@ -88,6 +88,7 @@ exports.create = (req, res) => {
         }).then(user => {
           user.token = generateToken(user.id);
           user.password = undefined;
+
           res.json(user);
         });
       }

@@ -3,8 +3,10 @@ require('dotenv').config();
 const Sequelize = require('sequelize');
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS,{
   host: process.env.DB_HOST,
-  dialect: 'mysql',
-  logging: false,
+  dialect: "mysql",
+  logging: true,
+
+  timezone: "America/Sao_Paulo"
 });
 
 const db = {};
@@ -15,6 +17,7 @@ db.sequelize = sequelize;
 //Models/user
 db.users = require('../model/user/user.model.js')(sequelize, Sequelize);
 db.users_meta = require('../model/user/userMeta.model.js')(sequelize, Sequelize);
+db.banned_users = require('../model/user/bannedUser.model.js')(sequelize, Sequelize);
 
 
 Object.keys(db).forEach(modelName => {

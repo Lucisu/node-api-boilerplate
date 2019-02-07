@@ -1,6 +1,8 @@
 const db = require('../../config/db.config.js');
 const UserMeta = db.users_meta;
 
+const validation = require('./meta.validation.js');
+
 exports.add = (req, res) => {
   try {
     UserMeta.findOne({where: {type: req.body.type, user_id: req.jwtUserId}}).then(userMeta=>{
@@ -19,6 +21,8 @@ exports.add = (req, res) => {
           }else {
             res.sendJson("Falha");
           }
+        }).catch(err => {
+          res.sendJson("Falha", 500);
         })
       }
     });
@@ -39,11 +43,23 @@ exports.delete = (req, res) => {
 }
 
 exports.find = (req, res) => {
-  UserMeta.findAll({where: {user_id: req.jwtUserId, ...req.body}}).then(result => {
+
+  UserMeta.findAll({where: {
+    user_id:req.jwtUserId,
+    ...(req.body.type && {type: req.body.type}),
+    ...(req.body.value && {value: req.body.value}),
+   } } ).then(result => {
     if (result) {
       res.sendJson({data: result});
     }else{
       res.sendJson("",400);
     }
+  }).catch( err => {
+    res.sendJson("",400);
+
   })
+}
+
+exports.validate = (method) => {
+  return validation.validate(method);
 }

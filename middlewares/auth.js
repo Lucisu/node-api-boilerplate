@@ -1,3 +1,5 @@
+const db = require('../config/db.config.js');
+const BannedUser = db.banned_users;
 const jwt = require('jsonwebtoken');
 module.exports = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -19,14 +21,22 @@ module.exports = (req, res, next) => {
     if (err)
       return res.status(401).send({ error: "Token Invalid" });
 
-    req.jwtUserId = decoded.userId;
+    BannedUser.findOne({where:{user_id: decoded.userId}}).then(banned => {
+      if (banned) {
+        let until = new Date(banned.until_date).toLocaleString();
+        let today = new Date().toLocaleString();
 
-
-    if (decoded.userId !== req.params.userId){
-      //return res.status(401).send({ error: "No permission" });
-    }
-
-    return next();
+        if (banned.status === "active" && until > today) {
+          return res.sendJson("You're banned. Reason: " + banned.reason + " - Back on " + until, 401);
+        }else{
+          req.jwtUserId = decoded.userId;
+          return next();
+        }
+      }else {
+        req.jwtUserId = decoded.userId;
+        return next();
+      }
+    })
 
 
   })
